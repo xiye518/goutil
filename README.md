@@ -12,11 +12,14 @@ Common and useful utils for the Go project development.
 
 - [BitSet](#bitset) A bit set
 - [Calendar](#calendar) Chinese Lunar Calendar, Solar Calendar and cron time rules
+- [Cmder](#cmder) Cmder exec cmd and catch the result
 - [CoarseTime](#coarsetime) Current time truncated to the nearest 100ms
 - [Errors](#errors) Improved errors package.
 - [Graceful](#graceful) Shutdown or reboot current process gracefully.
 - [GoPool](#gopool) Goroutines' pool
+- [HTTPBody](#httpbody) HTTP body builder
 - [ResPool](#respool) Resources' pool
+- [Tpack](#tpack) Go underlying type data
 - [Workshop](#workshop) Non-blocking asynchronous multiplex resource pool
 - [Password](#password) Check password
 - [Various](#various) Various small functions
@@ -170,6 +173,25 @@ Chinese Lunar Calendar, Solar Calendar and cron time rules.
     ```
 
 [Calendar details](calendar/README.md)
+
+### Cmder
+
+Exec cmd and catch the result.
+
+
+- import it
+
+    ```go
+    "github.com/henrylee2cn/goutil/cmder"
+    ```
+
+- Run exec cmd and catch the result.
+<br>Waits for the given command to finish with a timeout.
+<br>If the command times out, it attempts to kill the process.
+
+    ```go
+    func Run(cmdLine string, timeout ...time.Duration) *Result
+    ```
 
 ### CoarseTime
 
@@ -345,6 +367,52 @@ If calling 'Go' after calling 'Stop', will no longer reuse goroutine.
     func (gp *GoPool) Stop()
     ```
 
+### HTTPBody
+
+HTTP body builder.
+
+- import it
+
+    ```go
+    "github.com/henrylee2cn/goutil/httpbody"
+    ```
+
+- NewFormBody returns form request content type and body reader.
+<br> NOTE:
+<br>  @values format: \<fieldName,[value]\>
+<br>  @files format: \<fieldName,[fileName]\>
+
+    ```go
+    func NewFormBody(values, files url.Values) (contentType string, bodyReader io.Reader, err error)
+    ```
+
+- NewFormBody2 returns form request content type and body reader.
+<br> NOTE:
+<br>  @values format: \<fieldName,[value]\>
+<br>  @files format: \<fieldName,[File]\>
+
+    ```go
+    func NewFormBody2(values url.Values, files Files) (contentType string, bodyReader io.Reader)
+    ```
+
+- NewFile creates a file for HTTP form.
+
+    ```go
+    func NewFile(name string, bodyReader io.Reader) File
+    ```
+
+- NewJSONBody returns JSON request content type and body reader.
+
+    ```go
+    NewJSONBody(v interface{}) (contentType string, bodyReader io.Reader, err error)
+    ```
+
+- NewXMLBody returns XML request content type and body reader.
+
+    ```go
+    NewXMLBody(v interface{}) (contentType string, bodyReader io.Reader, err error)
+    ```
+
 ### ResPool
 
 ResPool is a high availability/high concurrent resource pool, which automatically manages the number of resources.
@@ -500,6 +568,62 @@ If the same name exists, will close and cover it.
     func (c *ResPools) Set(pool ResPool)
     ```
 
+### Tpack
+
+Go underlying type data.
+
+- import it
+
+    ```go
+    "github.com/henrylee2cn/goutil/tpack"
+    ```
+
+- doc
+
+    ```go
+    // U go underlying type data
+    type U struct {
+        // Has unexported fields.
+    }
+
+    // Unpack unpacks i to go underlying type data.
+    func Unpack(i interface{}) U
+   
+    // From gets go underlying type data from reflect.Value.
+    func From(v reflect.Value) U
+    
+    // RuntimeTypeID gets the underlying type ID in current runtime from reflect.Type.
+    // NOTE:
+    //  *A and A gets the same runtime type ID;
+    //  It is 10 times performance of t.String().
+    func RuntimeTypeID(t reflect.Type) int32
+    
+    // RuntimeTypeID gets the underlying type ID in current runtime.
+    // NOTE:
+    //  *A and A gets the same runtime type ID;
+    //  It is 10 times performance of reflect.TypeOf(i).String().
+    func (u U) RuntimeTypeID() int32
+
+    // Kind gets the reflect.Kind fastly.
+    func (u U) Kind() reflect.Kind
+
+    // Elem returns the U that the interface i contains
+    // or that the pointer i points to.
+    func (u U) Elem() U
+
+    // UnderlyingElem returns the underlying U that the interface i contains
+    // or that the pointer i points to.
+    func (u U) UnderlyingElem() U
+
+    // Pointer gets the pointer of i.
+    // NOTE:
+    //  *T and T, gets diffrent pointer
+    func (u U) Pointer() uintptr
+
+    // IsNil reports whether its argument i is nil.
+    func (u U) IsNil() bool
+    ```
+
 ### Workshop
 
 Non-blocking asynchronous multiplex resource pool.
@@ -620,6 +744,12 @@ Various small functions.
     func StringToBytes(s string) []byte
     ```
 
+- SpaceInOne combines multiple consecutive space characters into one.
+
+    ```go
+    func SpaceInOne(s string) string
+    ```
+
 - NewRandom creates a new padded Encoding defined by the given alphabet string.
 
     ```go
@@ -657,6 +787,12 @@ Various small functions.
 
     ```go
     func ObjectName(obj interface{}) string
+    ```
+
+- GetCallLine gets caller line information.
+
+    ```go
+    func GetCallLine(calldepth int) string 
     ```
 
 - JsQueryEscape escapes the string in javascript standard so it can be safely placed inside a URL query.
@@ -916,4 +1052,22 @@ to select AES-128, AES-192, or AES-256.
 
     ```go
     func RemoveAllFromInterfaces(set []interface{}, a interface{}) []interface{}
+    ```
+
+- GetFirstGopath gets the first $GOPATH value.
+
+    ```go
+    func GetFirstGopath(allowAutomaticGuessing bool) (goPath string, err error)
+    ```
+
+- TarGz compresses and archives tar.gz file.
+
+    ```go
+    func TarGz(src, dst string, includePrefix bool, logOutput func(string, ...interface{}), ignoreBaseName ...string) (err error)
+    ```
+
+- TarGzTo compresses and archives tar.gz to dst writer.
+
+    ```go
+    TarGzTo(src string, dstWriter io.Writer, includePrefix bool, logOutput func(string, ...interface{}), ignoreBaseName ...string) (err error)
     ```
